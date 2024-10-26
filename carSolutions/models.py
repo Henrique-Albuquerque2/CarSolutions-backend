@@ -19,7 +19,7 @@ class User(AbstractUser):
     estado = models.CharField(max_length=2)
     rua = models.CharField(max_length=100)
     bairro = models.CharField(max_length=100)
-    isfuncionario = models.BooleanField(default=False)
+    isfuncionario = models.BooleanField(default=False, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
