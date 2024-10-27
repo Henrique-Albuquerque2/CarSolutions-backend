@@ -20,6 +20,7 @@ class User(AbstractUser):
     rua = models.CharField(max_length=100)
     bairro = models.CharField(max_length=100)
     isfuncionario = models.BooleanField(default=False, null=True)
+    password_reset_token = models.CharField(max_length=20, blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]

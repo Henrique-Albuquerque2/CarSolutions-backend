@@ -2,12 +2,13 @@ from django.shortcuts import render
 
 # Create your views here.
 from carSolutions.models import User, Profile
-from carSolutions.serializers import UserSerializer, RegisterSerializer, MyTokenObtainPairSerializer, LogoutSerializer
+from carSolutions.serializers import RegisterSerializer, MyTokenObtainPairSerializer, LogoutSerializer
+from carSolutions.serializers import UserSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
@@ -72,3 +73,10 @@ class LogoutView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Logout realizado com sucesso!"}, status=status.HTTP_205_RESET_CONTENT)
+    
+class PasswordResetRequestView(generics.CreateAPIView):
+    serializer_class = PasswordResetRequestSerializer
+    permission_classes = [permissions.AllowAny]
+
+class PasswordResetConfirmView(generics.UpdateAPIView):
+    serializer_class = PasswordResetConfirmSerializer
