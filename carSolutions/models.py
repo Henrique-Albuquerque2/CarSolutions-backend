@@ -28,6 +28,12 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
     
+    def save(self, *args, **kwargs):
+        # Define is_staff automaticamente com base no isfuncionario
+        if self.isfuncionario:
+            self.is_staff = True
+        super().save(*args, **kwargs)
+    
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 

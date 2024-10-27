@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "corsheaders",
     "carSolutions",
+    "cars",
+    "transactions",
+    "notes",
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -187,3 +192,8 @@ EMAIL_HOST_PASSWORD = 'jzfg tton ezrn avjl'        # Substitua pela senha do seu
 DEFAULT_FROM_EMAIL = 'carsolutionsjr@gmail.com'
 
 SITE_URL = 'http://localhost:5173'  # Substitua pela URL do seu site apos o deploy
+
+# Configuração para imagens
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
