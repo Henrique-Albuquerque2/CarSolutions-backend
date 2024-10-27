@@ -78,5 +78,14 @@ class PasswordResetRequestView(generics.CreateAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [permissions.AllowAny]
 
-class PasswordResetConfirmView(generics.UpdateAPIView):
+class PasswordResetConfirmView(generics.GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [permissions.AllowAny]  # Permite acesso sem autenticação
+    queryset = User.objects.all()  # Define queryset para evitar erro
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Senha redefinida com sucesso."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
