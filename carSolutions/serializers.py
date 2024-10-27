@@ -4,6 +4,9 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.urls import reverse
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,3 +92,46 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()  # Adiciona o token na lista negra
         except Exception as e:
             raise serializers.ValidationError("Token inválido ou já expirado.")
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email não encontrado.")
+        return value
+
+    def save(self):
+        email = self.validated_data['email']
+        user = User.objects.get(email=email)
+
+        # Gerar token temporário
+        token = get_random_string(20)
+        user.password_reset_token = token  # Assumindo que temos esse campo no modelo User
+        user.save()
+
+        # Enviar email com link de redefinição
+        reset_url = f"{settings.SITE_URL}{reverse('password_reset_confirm', args=[token])}"
+        send_mail(
+            'Redefinição de Senha',
+            f'Clique no link para redefinir sua senha: {reset_url}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_token(self, value):
+        if not User.objects.filter(password_reset_token=value).exists():
+            raise serializers.ValidationError("Token inválido.")
+        return value
+
+    def save(self):
+        token = self.validated_data['token']
+        new_password = self.validated_data['new_password']
+        user = User.objects.get(password_reset_token=token)
+        user.set_password(new_password)
+        user.password_reset_token = None  # Limpa o token após redefinir a senha
+        user.save()

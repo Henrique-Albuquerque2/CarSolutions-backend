@@ -175,3 +175,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = 'carSolutions.User'
 
 FUNCIONARIO_CODIGO_REGISTRO = "soufuncionario"
+
+# Configurações para a implementação do recuperar senha, email da empresa: carsolutions@outlook.com
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'carsolutionsjr@gmail.com'  # Substitua pelo seu email
+EMAIL_HOST_PASSWORD = 'jzfg tton ezrn avjl'        # Substitua pela senha do seu email
+DEFAULT_FROM_EMAIL = 'carsolutionsjr@gmail.com'
+
+SITE_URL = 'http://127.0.0.1:8000'  # Substitua pela URL do seu site apos o deploy
