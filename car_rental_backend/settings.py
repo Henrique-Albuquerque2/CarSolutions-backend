@@ -186,4 +186,4 @@ EMAIL_HOST_USER = 'carsolutionsjr@gmail.com'  # Substitua pelo seu email
 EMAIL_HOST_PASSWORD = 'jzfg tton ezrn avjl'        # Substitua pela senha do seu email
 DEFAULT_FROM_EMAIL = 'carsolutionsjr@gmail.com'
 
-SITE_URL = 'http://127.0.0.1:8000'  # Substitua pela URL do seu site apos o deploy
+SITE_URL = 'http://localhost:5173'  # Substitua pela URL do seu site apos o deploy
