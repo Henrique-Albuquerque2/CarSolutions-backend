@@ -21,11 +21,15 @@ class CarViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return CarListSerializer if not self.request.user.is_staff else CarSerializer
         return CarSerializer
-
 class CarReservationViewSet(viewsets.ModelViewSet):
     queryset = CarReservation.objects.all()
     serializer_class = CarReservationSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Somente usuários autenticados podem reservar
 
+    def perform_create(self, serializer):
+        # Define o cliente automaticamente como o usuário autenticado
+        serializer.save(cliente=self.request.user)
+        
     def get_permissions(self):
         if self.action in ['create']:
             return [permissions.IsAuthenticated()]  # Somente usuários autenticados podem reservar
