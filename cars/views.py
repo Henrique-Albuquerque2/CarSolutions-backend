@@ -111,3 +111,14 @@ class CarReservationViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]  # Somente usuários autenticados podem reservar
         return [permissions.AllowAny()]
     
+class AvailableCarsView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            # Permitir acesso a qualquer usuário para GET
+            return [permissions.AllowAny()]
+        
+    def get(self, request):
+        # Filtra os carros disponíveis (is_disponivel=True)
+        available_cars = Car.objects.all().filter(is_disponivel=True)
+        serializer = CarListSerializer(available_cars, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
