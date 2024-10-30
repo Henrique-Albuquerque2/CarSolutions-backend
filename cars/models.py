@@ -65,3 +65,9 @@ class CarReservation(models.Model):
             self.car.save()
         super().save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        self.car.is_disponivel = True
+        self.car.save()
+        super().delete(*args, **kwargs)
+
+

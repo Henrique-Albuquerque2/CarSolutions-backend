@@ -10,6 +10,7 @@ from django.urls import reverse
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
+        # Define o modelo e os campos que serão serializados
         model = User
         fields = ["id", "username", "email", "full_name", "cpf", "celular",
                    "nacionalidade", "cep", "numero", "complemento", "cidade", 

@@ -89,3 +89,11 @@ class PasswordResetConfirmView(generics.GenericAPIView):
             serializer.save()
             return Response({"detail": "Senha redefinida com sucesso."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Função para obter os dados do usuário autenticado
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def meusdados(request):
+    user = request.user
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=200)
