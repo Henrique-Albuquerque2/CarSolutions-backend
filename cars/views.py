@@ -26,6 +26,14 @@ class CarViewSet(APIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['marca', 'categoria', 'tipo_de_produto', 'is_disponivel']
     search_fields = ['modelo', 'marca']
+    # views.py
+class CarViewSet(APIView):
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['marca', 'categoria', 'preco_venda', 'preco_diaria', 'tipo_de_produto']
+    search_fields = ['modelo', 'marca']
+
+    # Outras permissões e métodos get/post/patch já implementados anteriormente.
+
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -36,8 +44,11 @@ class CarViewSet(APIView):
             return [IsFuncionario()]
         
     def get(self, request):
-        print("chegou no get")
-        cars = Car.objects.all()
+        # Lista todos os carros se funcionário, caso contrário, apenas carros disponíveis
+        if request.user.is_authenticated and request.user.isfuncionario:
+            cars = Car.objects.all()
+        else:
+            cars = Car.objects.filter(is_disponivel=True)
         serializer = CarListSerializer(cars, many=True)
         return Response(serializer.data)
     
@@ -98,18 +109,18 @@ class CarDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class CarReservationViewSet(viewsets.ModelViewSet):
-    queryset = CarReservation.objects.all()
     serializer_class = CarReservationSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Somente usuários autenticados podem reservar
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Funcionários veem todas as reservas, clientes veem apenas as próprias
+        if self.request.user.isfuncionario:
+            return CarReservation.objects.all()
+        return CarReservation.objects.filter(cliente=self.request.user)
 
     def perform_create(self, serializer):
-        # Define o cliente automaticamente como o usuário autenticado
         serializer.save(cliente=self.request.user)
-        
-    def get_permissions(self):
-        if self.action in ['create']:
-            return [permissions.IsAuthenticated()]  # Somente usuários autenticados podem reservar
-        return [permissions.AllowAny()]
+
     
 class AvailableCarsView(APIView):
     def get_permissions(self):
