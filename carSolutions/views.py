@@ -51,20 +51,6 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
 
-
-@api_view(["GET", 'POST'])
-@permission_classes([IsAuthenticated])
-def dashboard(request):
-    if request.method == "GET":
-        response = f'Hello, {request.user.username}!, GET'
-        return Response({'response': response}, status=status.HTTP_200_OK)
-    if request.method == "POST":   
-        text = request.POST.get('text')
-        response = f'Hello, {request.user.username}! POST, You said: {text}'
-        return Response({'response': response}, status=status.HTTP_200_OK)
-    
-    return Response({'response': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
-    
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -91,9 +77,17 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Função para obter os dados do usuário autenticado
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def meusdados(request):
     user = request.user
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=200)
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method in ['PUT', 'PATCH']:
+        serializer = UserSerializer(user, data=request.data, partial=(request.method == 'PATCH'))
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
