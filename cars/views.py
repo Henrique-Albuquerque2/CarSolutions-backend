@@ -1,14 +1,15 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.response import Response
-from .models import Car, CarReservation
-from .serializers import CarSerializer, CarListSerializer, CarReservationSerializer
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsFuncionario  # Importa a permissão personalizada
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+
+from .models import Car, CarReservation
+from .serializers import CarSerializer, CarListSerializer, CarReservationSerializer
+from .permissions import IsFuncionario  # Importa a permissão personalizada
+
 
 
 class CarViewSet(APIView):
@@ -91,9 +92,6 @@ class AvailableCarsByDateView(generics.ListAPIView):
         # Obtém as datas e horas de retirada e devolução dos parâmetros da requisição
         data_retirada = self.request.query_params.get('dataRetirada')
         data_devolucao = self.request.query_params.get('dataDevolucao')
-        hora_retirada = self.request.query_params.get('horaRetirada')
-        hora_devolucao = self.request.query_params.get('horaDevolucao')
-
         # Filtra para exibir apenas carros disponíveis inicialmente
         queryset = Car.objects.filter(is_disponivel=False)
 
