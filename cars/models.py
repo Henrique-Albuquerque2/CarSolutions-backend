@@ -36,13 +36,19 @@ class Car(models.Model):
     data_atualizado = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.brand} {self.model} ({self.year})"
+        return f"{self.marca} {self.model} ({self.ano})"
 
 class CarReservation(models.Model):
 
     LOCATION_CHOICES = [
         ('Congonhas', 'Aeroporto de congonhas (CGH)'),
         ('Guarulhos', 'Aeroporto de Guarulhos (GRU)'),
+    ]
+
+    STATUS_CHOICES = [
+        ('em_breve', 'Em Breve'),
+        ('concluida', 'Concluída'),
+        ('cancelada', 'Cancelada'),
     ]
 
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='car_reservations')
@@ -53,11 +59,13 @@ class CarReservation(models.Model):
     hora_devolucao = models.TimeField()  # Hora de devolução
     local_retirada = models.CharField(max_length=100, choices= LOCATION_CHOICES)  # Local de retirada
     local_devolucao = models.CharField(max_length=100, choices= LOCATION_CHOICES)  # Local de devolução
+    preco_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Adiciona campo de preço total
     is_completed = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='em_breve')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Reserva de {self.cliente} - {self.car}"
+        return f"Reserva de {self.cliente} - {self.car} ({self.status})"
 
     def save(self, *args, **kwargs):
         if not self.is_completed:
