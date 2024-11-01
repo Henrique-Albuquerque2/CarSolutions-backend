@@ -81,7 +81,29 @@ class CarDetailView(APIView):
         car = get_object_or_404(Car, pk=pk)
         serializer = CarSerializer(car)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+class AvailableCarsByDateView(generics.ListAPIView):
+    serializer_class = CarSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Obtém as datas e horas de retirada e devolução dos parâmetros da requisição
+        data_retirada = self.request.query_params.get('dataRetirada')
+        data_devolucao = self.request.query_params.get('dataDevolucao')
+        hora_retirada = self.request.query_params.get('horaRetirada')
+        hora_devolucao = self.request.query_params.get('horaDevolucao')
+
+        # Filtra para exibir apenas carros disponíveis inicialmente
+        queryset = Car.objects.filter(is_disponivel=False)
+
+        # Exclui carros que estão reservados no período fornecido
+        if data_retirada and data_devolucao:
+            queryset = queryset.exclude(
+                Q(car_reservations__data_retirada__lte=data_devolucao) &
+                Q(car_reservations__data_devolucao__gte=data_retirada)
+            )
+
+        return queryset
 class AvailableCarsView(generics.ListAPIView):
     serializer_class = CarSerializer
     permission_classes = [permissions.AllowAny]  # Permite acesso público a este endpoint
@@ -120,18 +142,6 @@ class AvailableCarsView(generics.ListAPIView):
         if preco_max_venda:
             queryset = queryset.filter(preco_venda__lte=preco_max_venda)
         
-        # Filtrar por Data de aluguel, se fornecido
-        data_retirada = self.request.query_params.get('dataRetirada')
-        data_devolucao = self.request.query_params.get('dataDevolucao')
-        hora_retirada = self.request.query_params.get('horaRetirada')
-        hora_devolucao = self.request.query_params.get('horaDevolucao')
-
-        # Constrói o filtro de disponibilidade para a data e hora fornecidas
-        if data_retirada and data_devolucao:
-            queryset = queryset.exclude(
-                Q(car_reservations__data_retirada__lte=data_devolucao) & 
-                Q(car_reservations__data_devolucao__gte=data_retirada)
-            )
         return queryset
 class CarReservationViewSet(viewsets.ModelViewSet):
     serializer_class = CarReservationSerializer
