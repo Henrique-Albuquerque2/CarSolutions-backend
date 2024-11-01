@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.response import Response
 from .models import Car, CarReservation
@@ -155,7 +156,17 @@ class CarReservationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(cliente=self.request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['patch'])
+    def update_status(self, request, pk=None):
+        reservation = self.get_object()
+        new_status = request.data.get('status')
+        if new_status in dict(CarReservation.STATUS_CHOICES):
+            reservation.status = new_status
+            reservation.save()
+            return Response({'status': 'Status atualizado com sucesso'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Status inválido'}, status=status.HTTP_400_BAD_REQUEST)
 class UserReservationsView(generics.ListAPIView):
     serializer_class = CarReservationSerializer
     permission_classes = [permissions.IsAuthenticated]
