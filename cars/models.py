@@ -46,9 +46,9 @@ class CarReservation(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ('em_breve', 'Em Breve'),
-        ('concluida', 'Concluída'),
-        ('cancelada', 'Cancelada'),
+        ('EM_BREVE', 'Em Breve'),
+        ('CONCLUIDA', 'Concluída'),
+        ('CANCELADA', 'Cancelada'),
     ]
 
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='car_reservations')
@@ -61,7 +61,7 @@ class CarReservation(models.Model):
     local_devolucao = models.CharField(max_length=100, choices= LOCATION_CHOICES)  # Local de devolução
     preco_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Adiciona campo de preço total
     is_completed = models.BooleanField(default=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='em_breve')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='EM_BREVE')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
