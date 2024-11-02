@@ -1,15 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from .models import Car, CarReservation
 from .serializers import CarSerializer, CarListSerializer, CarReservationSerializer
 from .permissions import IsFuncionario  # Importa a permissão personalizada
-
 
 
 class CarViewSet(APIView):
@@ -33,7 +33,7 @@ class CarViewSet(APIView):
         if request.user.is_authenticated and request.user.isfuncionario:
             cars = Car.objects.all()
         else:
-            cars = Car.objects.all(is_disponivel=False)
+            cars = Car.objects.all(is_disponivel=True)
         serializer = CarListSerializer(cars, many=True)
         return Response(serializer.data)
     
@@ -92,8 +92,11 @@ class AvailableCarsByDateView(generics.ListAPIView):
         # Obtém as datas e horas de retirada e devolução dos parâmetros da requisição
         data_retirada = self.request.query_params.get('dataRetirada')
         data_devolucao = self.request.query_params.get('dataDevolucao')
-        # Filtra para exibir apenas carros disponíveis inicialmente
-        queryset = Car.objects.filter(is_disponivel=False)
+        hora_retirada = self.request.query_params.get('horaRetirada')
+        hora_devolucao = self.request.query_params.get('horaDevolucao')
+
+        # Filtra para exibir apenas carros disponíveis inicialmente (is_disponivel=True)
+        queryset = Car.objects.filter(is_disponivel=True)
 
         # Exclui carros que estão reservados no período fornecido
         if data_retirada and data_devolucao:
@@ -101,14 +104,13 @@ class AvailableCarsByDateView(generics.ListAPIView):
                 Q(car_reservations__data_retirada__lte=data_devolucao) &
                 Q(car_reservations__data_devolucao__gte=data_retirada)
             )
-
         return queryset
 class AvailableCarsView(generics.ListAPIView):
     serializer_class = CarSerializer
     permission_classes = [permissions.AllowAny]  # Permite acesso público a este endpoint
 
     def get_queryset(self):
-        queryset = Car.objects.filter(is_disponivel=False)  # Começa com apenas carros disponíveis
+        queryset = Car.objects.filter(is_disponivel=True)  # Começa com apenas carros disponíveis
         
         # Filtrar por marca, se fornecido
         marca = self.request.query_params.get('marca', None)
@@ -165,16 +167,39 @@ class CarReservationViewSet(viewsets.ModelViewSet):
             reservation.save()
             return Response({'status': 'Status atualizado com sucesso'}, status=status.HTTP_200_OK)
         return Response({'error': 'Status inválido'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
 class UserReservationsView(generics.ListAPIView):
     serializer_class = CarReservationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # Atualiza o status das reservas com uma função inline segura
+        hoje = timezone.now().date()
+        CarReservation.objects.filter(data_retirada=hoje, status='Em Breve').update(status='Em andamento')
+        CarReservation.objects.filter(data_devolucao__lt=hoje, status='Em Breve').update(status='Concluída')
         return CarReservation.objects.filter(cliente=self.request.user)
-
 class AllReservationsView(generics.ListAPIView):
     serializer_class = CarReservationSerializer
     permission_classes = [IsFuncionario]
 
     def get_queryset(self):
+        hoje = timezone.now().date()
+        CarReservation.objects.filter(data_retirada=hoje, status='Em Breve').update(status='Em andamento')
+        CarReservation.objects.filter(data_devolucao__lt=hoje, status='Em Breve').update(status='Concluída')
         return CarReservation.objects.all()
+
+@api_view(['POST'])
+def atualizar_status_reservas(request):
+    """
+    Atualiza o status das reservas com base na data de devolução.
+    Reservas cuja data de devolução já passou serão marcadas como "Concluída".
+    """
+    hoje = timezone.now().date()
+    reservas_atualizadas = CarReservation.objects.filter(data_devolucao__lt=hoje, status='EM_BREVE')
+    
+    for reserva in reservas_atualizadas:
+        reserva.status = 'CONCLUIDA'
+        reserva.save()
+        
+    return Response({'message': f'{reservas_atualizadas.count()} reservas foram atualizadas para Concluída.'}, status=status.HTTP_200_OK)
