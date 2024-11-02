@@ -14,4 +14,7 @@ urlpatterns = [
     path("reservations/<int:pk>/status/", views.CarReservationViewSet.as_view({'patch': 'update_status'}), name="reservation-update-status"),
     path("user/reservations/", views.UserReservationsView.as_view(), name="user-reservations"),
     path("all/reservations/", views.AllReservationsView.as_view(), name="all-reservations"),
+    # Atualização de status automático
+    path("reservas/atualizar_status/", views.atualizar_status_reservas, name="atualizar_status_reservas"),
+
 ]
