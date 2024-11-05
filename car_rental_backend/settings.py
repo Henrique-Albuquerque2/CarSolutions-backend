@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "carSolutions",
     "cars",
-    "transactions",
     "notes",
     'django_filters',
 ]

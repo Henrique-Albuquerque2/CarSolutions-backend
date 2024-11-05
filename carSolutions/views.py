@@ -91,3 +91,11 @@ def meusdados(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# Função para obter os dados de algum usuario através do ID
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dadosusuario(request, id):
+    user = User.objects.get(id=id)
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
