@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-h081o59shna4_9$#@8=w4+k)w76copt^)t%vkj(f1wh3lnzx__"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -127,13 +128,22 @@ WSGI_APPLICATION = "car_rental_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# SQLite3 (Local Host)
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
+#Render (Deploy)
+DATABASES = {
+    'default': dj_database_url.config(
+        default='postgresql://carsolutions_user:2dbNd9L0KonWLCur8qaSkjN1jyTNVq6X@dpg-cskmapaj1k6c73bjndfg-a.oregon-postgres.render.com/carsolutions',
+        conn_max_age=600,
+        ssl_require=not DEBUG
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
